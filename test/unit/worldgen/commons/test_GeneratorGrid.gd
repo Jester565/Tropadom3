@@ -83,7 +83,11 @@ func test_out_of_bounds_movement():
             assert_not_called(generator, 'generate')
 
 func _set_generator_grid(pos=Vector2i(0, 0), buf_dims=Vector2i(4, 4), max_bounds=Rect2i(-2, -2, 9, 9), dist_x_sides=1, dist_y_sides=1):
-    generator_grid = GeneratorGrid.new(DoubleGenerator, pos, buf_dims, max_bounds, dist_x_sides, dist_y_sides)
+    var create_generator = func(i, j):
+        return DoubleGenerator.new(i, j)
+    var generate = func(generator, neighboring_generators, _i, _j):
+        return generator.generate(neighboring_generators)
+    generator_grid = GeneratorGrid.new(create_generator, generate, pos, buf_dims, max_bounds, dist_x_sides, dist_y_sides)
 
 func _verify_generate_only_called_in_bounds(generate_bounds: Rect2i):
     var check_generate_call = func(generator, pos):

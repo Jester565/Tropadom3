@@ -68,7 +68,9 @@ func test_row():
     _verify_indexes_match(Rect2i(3, 0, 1, 1))
 
 func _set_shifting_grid(position = Vector2i(0, 0), buffer_dimensions=Vector2i(4, 4), max_bounds=Rect2i(-1, -1, 7, 6)):
-    shifting_grid = ShiftingGrid.new(GridElement, position, buffer_dimensions, max_bounds)
+    var create_grid_element = func(i, j):
+        return GridElement.new(i, j)
+    shifting_grid = ShiftingGrid.new(create_grid_element, position, buffer_dimensions, max_bounds)
 
 func _verify_indexes_match(expected_bounds: Rect2i):
     assert_eq(shifting_grid.get_dimensions(), Vector2i(expected_bounds.size.x, expected_bounds.size.y))

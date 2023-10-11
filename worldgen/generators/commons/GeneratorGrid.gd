@@ -1,15 +1,15 @@
 extends ShiftingGrid
 
-var _Generator
+var _generate_fn: Callable
 var _generate_bounds: Rect2i
 var _generate_at_distance_from_x_sides
 var _generate_at_distance_from_y_sides
 
-func _init(GeneratorClass, position: Vector2i, buffer_dimensions: Vector2i, max_bounds: Rect2i, generate_at_distance_from_x_sides=1, generate_at_distance_from_y_sides=1):
-    self._Generator = GeneratorClass
+func _init(create_fn: Callable, generate_fn: Callable, position: Vector2i, buffer_dimensions: Vector2i, max_bounds: Rect2i, generate_at_distance_from_x_sides=1, generate_at_distance_from_y_sides=1):
+    self._generate_fn = generate_fn
     self._generate_at_distance_from_x_sides = generate_at_distance_from_x_sides
     self._generate_at_distance_from_y_sides = generate_at_distance_from_y_sides
-    super(GeneratorClass, position, buffer_dimensions, max_bounds)
+    super(create_fn, position, buffer_dimensions, max_bounds)
     
 func _init_grid(bounds, uncontained_bounds):
     super(bounds, uncontained_bounds)
@@ -44,14 +44,16 @@ func _clear_grid():
 func _generate_row(j, start_i, end_i):
     var neighboring_generators = self._get_neighboring_generators(start_i, j)
     for i in range(start_i, end_i):
-        neighboring_generators[1][1].generate(neighboring_generators)
+        var generator = neighboring_generators[1][1]
+        self._generate_fn.call(generator, neighboring_generators, i, j)
         if i + 1 < end_i:
             self._shift_neighboring_generators_right(neighboring_generators, i + 1, j)
 
 func _generate_col(i, start_j, end_j):
     var neighboring_generators = self._get_neighboring_generators(i, start_j)
     for j in range(start_j, end_j):
-        neighboring_generators[1][1].generate(neighboring_generators)
+        var generator = neighboring_generators[1][1]
+        self._generate_fn.call(generator, neighboring_generators, i, j)
         if j + 1 < end_j:
             self._shift_neighboring_generators_down(neighboring_generators, i, j + 1)
 

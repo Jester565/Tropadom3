@@ -2,14 +2,14 @@ class_name ShiftingGrid
 
 const GridElement = preload("res://structures/GridElement.gd")
 
-var _GridElement
+var _create_fn: Callable
 var _grid: CircularBuffer = null
 var _bounds
 var _max_bounds
 var _buffer_dimensions
 
-func _init(GridElementClass, position: Vector2i, buffer_dimensions: Vector2i, max_bounds: Rect2i):
-    self._GridElement = GridElementClass
+func _init(create_fn: Callable, position: Vector2i, buffer_dimensions: Vector2i, max_bounds: Rect2i):
+    self._create_fn = create_fn
     self._max_bounds = max_bounds
     self._buffer_dimensions = buffer_dimensions
     var uncontained_bounds = Rect2i(position, buffer_dimensions)
@@ -96,7 +96,7 @@ func _init_grid(bounds, _uncontained_bounds):
     for i in range(bounds.position.x, bounds.end.x):
         var col = CircularBuffer.new([], bounds.position.y, self._buffer_dimensions.y)
         for j in range(bounds.position.y, bounds.end.y):
-            col.push_to_end(self._GridElement.new(i, j))
+            col.push_to_end(self._create_fn.call(i, j))
         self._grid.push_to_end(col)
 
 func _clear_grid():
@@ -118,23 +118,23 @@ func _get_new_right_col_indexes(prev_bounds: Rect2i, new_bounds: Rect2i):
 func _push_top_row(start_i, width):
     for i in range(start_i, start_i + width):
         var col: CircularBuffer = self._grid.get_at(i)
-        col.push_to_start(self._GridElement.new(i, col.get_start_i() - 1))
+        col.push_to_start(self._create_fn.call(i, col.get_start_i() - 1))
 
 func _push_bottom_row(start_i, width):
     for i in range(start_i, start_i + width):
         var col: CircularBuffer = self._grid.get_at(i)
-        col.push_to_end(self._GridElement.new(i, col.get_start_i() + col.get_size()))
+        col.push_to_end(self._create_fn.call(i, col.get_start_i() + col.get_size()))
 
 func _push_left_col(start_j, height):
     var col = CircularBuffer.new([], start_j, self._buffer_dimensions.y)
     for j in range(start_j, start_j + height):
-        col.push_to_end(self._GridElement.new(self._grid.get_start_i() - 1, j))
+        col.push_to_end(self._create_fn.call(self._grid.get_start_i() - 1, j))
     self._grid.push_to_start(col)
 
 func _push_right_col(start_j, height):
     var col = CircularBuffer.new([], start_j, self._buffer_dimensions.y)
     for j in range(start_j, start_j + height):
-        col.push_to_end(self._GridElement.new(self._grid.get_start_i() + self._grid.get_size(), j))
+        col.push_to_end(self._create_fn.call(self._grid.get_start_i() + self._grid.get_size(), j))
     self._grid.push_to_end(col)
 
 func _pop_top_row():
