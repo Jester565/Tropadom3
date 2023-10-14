@@ -1,0 +1,13 @@
+[gd_scene load_steps=3 format=3 uid="uid://dsi3nvaulmylw"]
+
+[ext_resource type="Script" path="res://worldgen/chunks/Chunk.gd" id="1_utn6a"]
+[ext_resource type="TileSet" uid="uid://b5y5u15yrpjtr" path="res://worldgen/chunks/tiles/my_tile_set.tres" id="2_cwkn2"]
+
+[node name="Chunk" type="Node2D" node_paths=PackedStringArray("tile_map")]
+script = ExtResource("1_utn6a")
+tile_map = NodePath("TileMap")
+
+[node name="TileMap" type="TileMap" parent="."]
+tile_set = ExtResource("2_cwkn2")
+format = 2
+layer_0/name = "BlockLayer"
