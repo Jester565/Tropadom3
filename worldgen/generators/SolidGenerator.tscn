@@ -1,0 +1,13 @@
+[gd_scene load_steps=3 format=3 uid="uid://744pndbbs6aq"]
+
+[ext_resource type="Script" path="res://worldgen/generators/commons/Generator.gd" id="1_6hwm3"]
+[ext_resource type="Script" path="res://worldgen/elements/SolidElement.gd" id="2_v80ir"]
+
+[node name="SolidGenerator" type="Node2D" node_paths=PackedStringArray("static_elements")]
+script = ExtResource("1_6hwm3")
+static_elements = [NodePath("SolidElement")]
+chunk_dimensions = Vector2i(2, 2)
+
+[node name="SolidElement" type="Node" parent="."]
+script = ExtResource("2_v80ir")
+block_dimensions = Vector2i(32, 32)
