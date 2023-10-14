@@ -1,18 +1,40 @@
-extends GridElement
+extends Node
 
 class_name Generator
 
-# static func GetChunkWidth():
-#     return 8
+@export var static_elements: Array[Element]
+@export var chunk_dimensions := Vector2i(1, 1)
+@export var block_dimensions: Vector2i :
+	get:
+		return chunk_dimensions * Globals.CHUNK_SIZE
 
-# static func GetChunkHeight():
-#     return 8
+var _elements = []
 
-func generate(neighboaring_generators):
-    pass
+func _ready():
+	self._elements.append_array(static_elements)
 
-func get_elements_intersecting_with(bounding_rect: Rect2i):
-    return []
+func generate(neighboring_generators):
+	for i in 3:
+		for j in 3:
+			var neighbor = neighboring_generators[i][j]
+			if neighbor != null:
+				var relative_bounds = Rect2i(Vector2i(block_dimensions.x * (i - 1), block_dimensions.y * (j - 1)), block_dimensions)
+				neighbor.get_elements_intersecting_with(relative_bounds)
 
-func get_elements():
-    pass
+func get_elements_intersecting_with(relative_bounding_rect: Rect2i):
+	var elements = []
+	self._for_each_intersecting_element(relative_bounding_rect, func(element):
+		elements.append(element)
+	)
+	return elements
+
+
+func apply(chunk, relative_chunk_bounds):
+	self._for_each_intersecting_element(relative_chunk_bounds, func(element):
+		element.apply(chunk, relative_chunk_bounds)
+	)
+
+func _for_each_intersecting_element(relative_bounds, callable: Callable):
+	for element in self._elements:
+		if element.local_bounds.intersects(relative_bounds):
+			callable.call(element)
