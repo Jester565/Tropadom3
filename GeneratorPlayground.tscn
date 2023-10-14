@@ -1,0 +1,25 @@
+[gd_scene load_steps=6 format=3 uid="uid://d4dfoddrgi2jb"]
+
+[ext_resource type="Script" path="res://worldgen/chunks/ChunkManager.gd" id="1_q37fl"]
+[ext_resource type="PackedScene" uid="uid://dsi3nvaulmylw" path="res://worldgen/chunks/Chunk.tscn" id="2_jmc0j"]
+[ext_resource type="Script" path="res://worldgen/generators/commons/GeneratorGridNode.gd" id="2_jrgij"]
+[ext_resource type="PackedScene" uid="uid://744pndbbs6aq" path="res://worldgen/generators/SolidGenerator.tscn" id="3_fsqn0"]
+[ext_resource type="PackedScene" uid="uid://cn01i7v5ksxqe" path="res://player.tscn" id="5_vdsk2"]
+
+[node name="GeneratorPlayground" type="Node2D"]
+position = Vector2(-2, 3)
+
+[node name="ChunkManager" type="Node2D" parent="." node_paths=PackedStringArray("generator_grids")]
+script = ExtResource("1_q37fl")
+init_chunk_position = Vector2i(0, 0)
+chunk_scene = ExtResource("2_jmc0j")
+generator_grids = [NodePath("GeneratorGridNode")]
+
+[node name="GeneratorGridNode" type="Node" parent="ChunkManager"]
+script = ExtResource("2_jrgij")
+max_bounds = Rect2i(-100, -100, 200, 200)
+buffer_dimensions = Vector2i(6, 6)
+generator_scene = ExtResource("3_fsqn0")
+
+[node name="CharacterBody2D" parent="." instance=ExtResource("5_vdsk2")]
+position = Vector2(379, -33)
