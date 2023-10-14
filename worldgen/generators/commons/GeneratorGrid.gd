@@ -1,5 +1,7 @@
 extends ShiftingGrid
 
+class_name GeneratorGrid
+
 var _generate_fn: Callable
 var _generate_bounds: Rect2i
 var _generate_at_distance_from_x_sides
