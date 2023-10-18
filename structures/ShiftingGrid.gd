@@ -66,9 +66,9 @@ func get_bounds():
 
 func _shift(new_bounds: Rect2i, _new_uncontained_bounds: Rect2i):
 	for j in self._get_new_top_row_indexes(self._bounds, new_bounds):
-		self._push_top_row(self._bounds.position.x, self._bounds.size.x)
+		self._push_top_row(max(new_bounds.position.x, self._bounds.position.x), self._bounds.size.x - abs(new_bounds.position.x - self._bounds.position.x))
 	for j in self._get_new_bottom_row_indexes(self._bounds, new_bounds):
-		self._push_bottom_row(self._bounds.position.x, self._bounds.size.x)
+		self._push_bottom_row(max(new_bounds.position.x, self._bounds.position.x), self._bounds.size.x - abs(new_bounds.position.x - self._bounds.position.x))
 	
 	for i in self._get_new_left_col_indexes(self._bounds, new_bounds):
 		self._push_left_col(new_bounds.position.y, new_bounds.size.y)

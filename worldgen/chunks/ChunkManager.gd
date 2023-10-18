@@ -37,21 +37,18 @@ func _ready():
 
 
 func _create_chunk(chunk_i, chunk_j):
-	if self._chunk_bounds.has_point(Vector2i(chunk_i, chunk_j)):
-		var chunk = chunk_scene.instantiate()
-		var chunk_indexes = Vector2i(chunk_i, chunk_j)
-		chunk.chunk_indexes = chunk_indexes
-		chunk.position = chunk_indexes * Globals.CHUNK_SIZE * Globals.BLOCK_SIZE
-		for generator_grid in generator_grids:
-			generator_grid.apply(chunk)
-		chunk.write_block_sources()
-		add_child(chunk)
-		return chunk
-	return null
+	var chunk = chunk_scene.instantiate()
+	var chunk_indexes = Vector2i(chunk_i, chunk_j)
+	chunk.chunk_indexes = chunk_indexes
+	chunk.position = chunk_indexes * Globals.CHUNK_SIZE * Globals.BLOCK_SIZE
+	for generator_grid in generator_grids:
+		generator_grid.apply(chunk)
+	chunk.write_block_sources()
+	add_child(chunk)
+	return chunk
 
 func _free_chunk(chunk, _chunk_i, _chunk_j):
-	if chunk != null:
-		chunk.queue_free()
+	chunk.queue_free()
 
 func _process(_delta):
 	var new_chunk_indexes = self._get_chunk_indexes_at_camera_center()
