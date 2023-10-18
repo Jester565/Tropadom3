@@ -3,13 +3,15 @@ class_name ShiftingGrid
 const GridElement = preload("res://structures/GridElement.gd")
 
 var _create_fn: Callable
+var _free_fn: Callable
 var _grid: CircularBuffer = null
 var _bounds
 var _max_bounds
 var _buffer_dimensions
 
-func _init(create_fn: Callable, position: Vector2i, buffer_dimensions: Vector2i, max_bounds: Rect2i):
+func _init(create_fn: Callable, free_fn: Callable, position: Vector2i, buffer_dimensions: Vector2i, max_bounds: Rect2i):
 	self._create_fn = create_fn
+	self._free_fn = free_fn
 	self._max_bounds = max_bounds
 	self._buffer_dimensions = buffer_dimensions
 	var uncontained_bounds = Rect2i(position, buffer_dimensions)
@@ -26,6 +28,7 @@ func move_to(position: Vector2i):
 		self._clear_grid()
 	elif self._bounds.has_area() and new_bounds.has_area():
 		# only shift if there's some overlap
+
 		if self._bounds.intersects(new_bounds):
 			self._shift(new_bounds, new_uncontained_bounds)
 		else:
@@ -100,6 +103,10 @@ func _init_grid(bounds, _uncontained_bounds):
 		self._grid.push_to_end(col)
 
 func _clear_grid():
+	if self._grid != null:
+		self.for_each(func(elm, indexes):
+			self._free_fn.call(elm, indexes.x, indexes.y)
+		)
 	self._grid = null
 	self._bounds = Rect2i(0, 0, 0, 0)
 
@@ -107,7 +114,7 @@ func _get_new_bottom_row_indexes(prev_bounds: Rect2i, new_bounds: Rect2i):
 	return range(prev_bounds.end.y, new_bounds.end.y)
 
 func _get_new_top_row_indexes(prev_bounds: Rect2i, new_bounds: Rect2i):
-	return range(new_bounds.position.y, prev_bounds.position.y)
+	return range(new_bounds.position.y,prev_bounds.position.y)
 
 func _get_new_left_col_indexes(prev_bounds: Rect2i, new_bounds: Rect2i):
 	return range(new_bounds.position.x, prev_bounds.position.x)
@@ -115,40 +122,85 @@ func _get_new_left_col_indexes(prev_bounds: Rect2i, new_bounds: Rect2i):
 func _get_new_right_col_indexes(prev_bounds: Rect2i, new_bounds: Rect2i):
 	return range(prev_bounds.end.x, new_bounds.end.x)
 
+
+func _get_new_active_bottom_row_indexes(prev_bounds: Rect2i, new_bounds: Rect2i):
+	return range(max(prev_bounds.end.y, new_bounds.position.y), new_bounds.end.y)
+
+func _get_new_active_top_row_indexes(prev_bounds: Rect2i, new_bounds: Rect2i):
+	return range(new_bounds.position.y, min(prev_bounds.position.y, new_bounds.end.y))
+
+func _get_new_active_left_col_indexes(prev_bounds: Rect2i, new_bounds: Rect2i):
+	return range(new_bounds.position.x, min(prev_bounds.position.x, new_bounds.end.x))
+
+func _get_new_active_right_col_indexes(prev_bounds: Rect2i, new_bounds: Rect2i):
+	return range(max(prev_bounds.end.x, new_bounds.position.x), new_bounds.end.x)
+
 func _push_top_row(start_i, width):
 	for i in range(start_i, start_i + width):
 		var col: CircularBuffer = self._grid.get_at(i)
-		col.push_to_start(self._create_fn.call(i, col.get_start_i() - 1))
+		var bottom_j = col.get_end_i()
+		var removed_elm = col.push_to_start(self._create_fn.call(i, col.get_start_i() - 1))
+		if removed_elm != null:
+			self._free_fn.call(removed_elm, i, bottom_j)
 
 func _push_bottom_row(start_i, width):
 	for i in range(start_i, start_i + width):
 		var col: CircularBuffer = self._grid.get_at(i)
-		col.push_to_end(self._create_fn.call(i, col.get_start_i() + col.get_size()))
+		var top_j = col.get_start_i()
+		var removed_elm = col.push_to_end(self._create_fn.call(i, col.get_start_i() + col.get_size()))
+		if removed_elm != null:
+			self._free_fn.call(removed_elm, i, top_j)
 
 func _push_left_col(start_j, height):
 	var col = CircularBuffer.new([], start_j, self._buffer_dimensions.y)
 	for j in range(start_j, start_j + height):
 		col.push_to_end(self._create_fn.call(self._grid.get_start_i() - 1, j))
-	self._grid.push_to_start(col)
+	var right_i = self._grid.get_end_i()
+	var removed_col = self._grid.push_to_start(col)
+	if removed_col != null:
+		removed_col.for_each(func(elm, j):
+			self._free_fn.call(elm, right_i, j)
+		)
 
 func _push_right_col(start_j, height):
 	var col = CircularBuffer.new([], start_j, self._buffer_dimensions.y)
 	for j in range(start_j, start_j + height):
 		col.push_to_end(self._create_fn.call(self._grid.get_start_i() + self._grid.get_size(), j))
-	self._grid.push_to_end(col)
+	var left_i = self._grid.get_start_i()
+	var removed_col = self._grid.push_to_end(col)
+	if removed_col != null:
+		removed_col.for_each(func(elm, j):
+			self._free_fn.call(elm, left_i, j)
+		)
 
 func _pop_top_row():
 	for i in range(self._grid.get_start_i(), self._grid.get_size()):
 		var col: CircularBuffer = self._grid.get_at(i)
-		col.pop_from_start()
+		var top_j = col.get_start_i()
+		var removed_elm = col.pop_from_start()
+		if removed_elm != null:
+			self._free_fn.call(removed_elm, i, top_j)
 
 func _pop_bottom_row():
 	for i in range(self._grid.get_start_i(), self._grid.get_size()):
 		var col: CircularBuffer = self._grid.get_at(i)
-		col.pop_from_end()
+		var bottom_j = col.get_end_i()
+		var removed_elm = col.pop_from_end()
+		if removed_elm != null:
+			self._free_fn.call(removed_elm, i, bottom_j)
 
 func _pop_left_col():
-	self._grid.pop_from_start()
+	var left_i = self._grid.get_start_i()
+	var removed_col = self._grid.pop_from_start()
+	if removed_col != null:
+		removed_col.for_each(func(elm, j):
+			self._free_fn.call(elm, left_i, j)
+		)
 
 func _pop_right_col():
-	self._grid.pop_from_end()
+	var right_i = self._grid.get_end_i()
+	var removed_col = self._grid.pop_from_end()
+	if removed_col != null:
+		removed_col.for_each(func(elm, j):
+			self._free_fn.call(elm, right_i, j)
+		)
