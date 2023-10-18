@@ -7,11 +7,11 @@ var _generate_bounds: Rect2i
 var _generate_at_distance_from_x_sides
 var _generate_at_distance_from_y_sides
 
-func _init(create_fn: Callable, generate_fn: Callable, position: Vector2i, buffer_dimensions: Vector2i, max_bounds: Rect2i, generate_at_distance_from_x_sides=1, generate_at_distance_from_y_sides=1):
+func _init(create_fn: Callable, generate_fn: Callable, free_fn: Callable, position: Vector2i, buffer_dimensions: Vector2i, max_bounds: Rect2i, generate_at_distance_from_x_sides=1, generate_at_distance_from_y_sides=1):
     self._generate_fn = generate_fn
     self._generate_at_distance_from_x_sides = generate_at_distance_from_x_sides
     self._generate_at_distance_from_y_sides = generate_at_distance_from_y_sides
-    super(create_fn, position, buffer_dimensions, max_bounds)
+    super(create_fn, free_fn, position, buffer_dimensions, max_bounds)
     
 func _init_grid(bounds, uncontained_bounds):
     super(bounds, uncontained_bounds)
@@ -30,17 +30,18 @@ func _shift(new_bounds, new_uncontained_bounds):
         if !self._generate_bounds.has_area():
             self._run_generate_on_bounds(new_uncontained_bounds)
         else:
-            for j in self._get_new_top_row_indexes(self._generate_bounds,new_generate_bounds):
+            for j in self._get_new_active_top_row_indexes(self._generate_bounds,new_generate_bounds):
                 self._generate_row(j, new_generate_bounds.position.x,new_generate_bounds.end.x)
-            for j in self._get_new_bottom_row_indexes(self._generate_bounds, new_generate_bounds):
+            for j in self._get_new_active_bottom_row_indexes(self._generate_bounds, new_generate_bounds):
                 self._generate_row(j, new_generate_bounds.position.x, new_generate_bounds.end.x)
-            for i in self._get_new_left_col_indexes(self._generate_bounds, new_generate_bounds):
+            for i in self._get_new_active_left_col_indexes(self._generate_bounds, new_generate_bounds):
                 self._generate_col(i, new_generate_bounds.position.y, new_generate_bounds.end.y)
-            for i in self._get_new_right_col_indexes(self._generate_bounds, new_generate_bounds):
+            for i in self._get_new_active_right_col_indexes(self._generate_bounds, new_generate_bounds):
                 self._generate_col(i, new_generate_bounds.position.y,new_generate_bounds.end.y)
     self._generate_bounds = new_generate_bounds
 
 func _clear_grid():
+    super()
     self._generate_bounds = Rect2i(0, 0, 0, 0)
 
 func _generate_row(j, start_i, end_i):
