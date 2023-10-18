@@ -3,11 +3,17 @@
 [ext_resource type="Script" path="res://worldgen/generators/commons/Generator.gd" id="1_6hwm3"]
 [ext_resource type="Script" path="res://worldgen/elements/SolidElement.gd" id="2_v80ir"]
 
-[node name="SolidGenerator" type="Node2D" node_paths=PackedStringArray("static_elements")]
+[node name="Generator" type="Node2D" node_paths=PackedStringArray("static_elements")]
 script = ExtResource("1_6hwm3")
 static_elements = [NodePath("SolidElement")]
-chunk_dimensions = Vector2i(2, 2)
+block_dimensions = Vector2i(16, 16)
+debug_overlay_enabled_in_game = false
+debug_overlay_color = Color(1, 0, 0, 1)
+debug_overlay_width = 6
 
-[node name="SolidElement" type="Node" parent="."]
+[node name="SolidElement" type="Node2D" parent="."]
+z_index = 100
 script = ExtResource("2_v80ir")
-block_dimensions = Vector2i(32, 32)
+block_dimensions = Vector2i(4, 4)
+debug_overlay_enabled_in_game = false
+debug_overlay_width = 6

@@ -1,11 +1,15 @@
 @tool
 
-extends Node2D
+extends OverlaidNode2D
 
 class_name Chunk
 
 @export var tile_map: TileMap
-@export var chunk_indexes: Vector2i
+@export var chunk_indexes: Vector2i :
+	set(new_indexes):
+		self._pixel_bounds = Rect2i(chunk_indexes * (Globals.CHUNK_SIZE * Globals.BLOCK_SIZE), Vector2i(Globals.CHUNK_SIZE, Globals.CHUNK_SIZE) * Globals.BLOCK_SIZE)
+		chunk_indexes = new_indexes
+
 @export var block_indexes: Vector2i :
 	get:
 		return chunk_indexes * Globals.CHUNK_SIZE

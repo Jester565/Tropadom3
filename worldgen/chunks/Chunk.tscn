@@ -6,6 +6,10 @@
 [node name="Chunk" type="Node2D" node_paths=PackedStringArray("tile_map")]
 script = ExtResource("1_utn6a")
 tile_map = NodePath("TileMap")
+block_bounds = Rect2i(0, 0, 16, 16)
+debug_overlay_enabled_in_editor = false
+debug_overlay_color = Color(0, 0, 1, 1)
+debug_overlay_width = 4
 
 [node name="TileMap" type="TileMap" parent="."]
 tile_set = ExtResource("2_cwkn2")
