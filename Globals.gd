@@ -1,7 +1,10 @@
+@tool
+
 extends Node
 
 var BLOCK_SIZE = 32
-var CHUNK_SIZE = 64
+var CHUNK_SIZE = 16
+var DEBUG_Z_INDEX = 100
 
 enum Block { 
     AIR = -1,
