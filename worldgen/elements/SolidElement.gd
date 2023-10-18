@@ -1,3 +1,5 @@
+@tool
+
 extends Element
 
 class_name SolidElement

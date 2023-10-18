@@ -1,4 +1,4 @@
-extends Node
+extends OverlaidNode2D
 
 class_name Element
 
@@ -7,6 +7,9 @@ class_name Element
 var local_bounds: Rect2i :
 	get:
 		return Rect2i(local_pos, block_dimensions)
+
+func init(block_pos):
+	self._pixel_bounds = Rect2i(block_pos * Globals.BLOCK_SIZE, block_dimensions * Globals.BLOCK_SIZE)
 
 func apply(_chunk: Chunk, _local_chunk_bounds: Rect2i):
 	assert(false, "apply not implemented")
